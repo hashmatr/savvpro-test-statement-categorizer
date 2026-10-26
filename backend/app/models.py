@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Optional
 
@@ -40,7 +40,7 @@ class Statement(SQLModel, table=True):
     period_start: Optional[date] = None
     period_end: Optional[date] = None
     file_hash: str = Field(index=True)
-    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
+    uploaded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     row_count: int = 0
 
 
@@ -102,5 +102,5 @@ class UserRule(SQLModel, table=True):
     category: str
     min_cents: Optional[int] = None
     max_cents: Optional[int] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     hit_count: int = 0

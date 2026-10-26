@@ -6,11 +6,20 @@ FastAPI application entry point.
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import rules, statements, summary, transactions
 from app.db import init_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
 
 app = FastAPI(
     title="TaxSort – Statement Categorizer",
@@ -19,6 +28,7 @@ app = FastAPI(
         "expense categories using deterministic rules."
     ),
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # CORS for Next.js frontend
@@ -35,11 +45,6 @@ app.include_router(statements.router, prefix="/api/v1")
 app.include_router(transactions.router, prefix="/api/v1")
 app.include_router(rules.router, prefix="/api/v1")
 app.include_router(summary.router, prefix="/api/v1")
-
-
-@app.on_event("startup")
-def on_startup():
-    init_db()
 
 
 @app.get("/health")

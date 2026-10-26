@@ -122,10 +122,10 @@ class CsvParser(BaseParser):
             credit_col = _find_col_idx(headers, column_mapping.get("credit_col")) if column_mapping.get("credit_col") else None
         else:
             date_col = _match_header(headers, _DATE_SYNONYMS)
-            desc_col = _match_header(headers, _DESC_SYNONYMS)
-            amt_col = _match_header(headers, _AMOUNT_SYNONYMS)
-            debit_col = _match_header(headers, _DEBIT_SYNONYMS)
-            credit_col = _match_header(headers, _CREDIT_SYNONYMS)
+            desc_col = _match_header(headers, _DESC_SYNONYMS, exclude={date_col} if date_col is not None else None)
+            amt_col = _match_header(headers, _AMOUNT_SYNONYMS, exclude={c for c in (date_col, desc_col) if c is not None})
+            debit_col = _match_header(headers, _DEBIT_SYNONYMS, exclude={c for c in (date_col, desc_col, amt_col) if c is not None})
+            credit_col = _match_header(headers, _CREDIT_SYNONYMS, exclude={c for c in (date_col, desc_col, amt_col, debit_col) if c is not None})
 
         if date_col is None or desc_col is None:
             raise ParseError(
@@ -141,7 +141,12 @@ class CsvParser(BaseParser):
                 available_columns=[all_rows[header_idx][i] for i in range(len(headers))],
             )
 
-        has_separate_cols = debit_col is not None and credit_col is not None
+        has_separate_cols = (
+            debit_col is not None
+            and credit_col is not None
+            and debit_col != credit_col
+            and (amt_col is None or (debit_col != amt_col and credit_col != amt_col))
+        )
 
         # ── Detect date format ───────────────────────────────────────────
         date_values = [
@@ -207,15 +212,21 @@ class CsvParser(BaseParser):
         return results
 
 
-def _match_header(headers: list[str], synonyms: set[str]) -> int | None:
+def _match_header(headers: list[str], synonyms: set[str], exclude: set[int] | None = None) -> int | None:
     """Find the column index matching any synonym."""
+    exclude = exclude or set()
+    # 1. Exact match
     for i, h in enumerate(headers):
+        if i in exclude:
+            continue
         if h in synonyms:
             return i
-    # Partial match
+    # 2. Word boundary match
     for i, h in enumerate(headers):
+        if i in exclude:
+            continue
         for syn in synonyms:
-            if syn in h or h in syn:
+            if re.search(r"\b" + re.escape(syn) + r"\b", h):
                 return i
     return None
 

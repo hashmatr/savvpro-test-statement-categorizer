@@ -32,10 +32,9 @@ _PROCESSOR_PREFIXES: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^PAYPAL\s*\*\s*", re.I), ""),
     (re.compile(r"^GOOGLE\s*\*\s*", re.I), "GOOGLE "),
     (re.compile(r"^APPLE\.COM/", re.I), "APPLE "),
-    (re.compile(r"^AMZN\s+MKTP\s+US\s*", re.I), "AMAZON"),
-    (re.compile(r"^AMZN\s+MKTP\s*", re.I), "AMAZON"),
-    (re.compile(r"^AMAZON\.COM\s*", re.I), "AMAZON"),
-    (re.compile(r"^AMZN\s*", re.I), "AMAZON"),
+    (re.compile(r"^AMZN\s+MKTP(\s+US)?\b.*", re.I), "AMAZON"),
+    (re.compile(r"^AMAZON\.COM\b.*", re.I), "AMAZON"),
+    (re.compile(r"^AMZN\b\s*", re.I), "AMAZON"),
     (re.compile(r"^SP\s+", re.I), ""),            # Shopify
     (re.compile(r"^CKO\s*\*\s*", re.I), ""),       # Checkout.com
 ]
