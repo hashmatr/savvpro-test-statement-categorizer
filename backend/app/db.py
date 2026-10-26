@@ -1,7 +1,8 @@
-"""Database engine and session management."""
+"""Database engine and session management for SQLite."""
 
 from __future__ import annotations
 
+# pyrefly: ignore[missing-import]
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.config import DATABASE_URL, DB_DIR

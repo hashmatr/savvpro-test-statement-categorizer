@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import rules, statements, summary, transactions
+from app.api import auth, rules, statements, summary, transactions
 from app.db import init_db
 
 
@@ -41,6 +41,7 @@ app.add_middleware(
 )
 
 # Mount routers under /api/v1
+app.include_router(auth.router, prefix="/api/v1")
 app.include_router(statements.router, prefix="/api/v1")
 app.include_router(transactions.router, prefix="/api/v1")
 app.include_router(rules.router, prefix="/api/v1")
